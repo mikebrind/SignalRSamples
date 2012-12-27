@@ -1,0 +1,22 @@
+﻿@{
+    
+}
+
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>@Page.Title</title>
+        <link href="~/Styles/site.css" rel="stylesheet" type="text/css" />
+        <script src="~/Scripts/jquery-1.6.4.min.js" ></script>
+        <script src="~/Scripts/jquery.signalR-1.0.0-rc1.min.js"></script>
+        <script src="~/Scripts/jquery-ui-1.8.4.custom.min.js"></script>
+        <script src="~/Scripts/knockout-2.2.0.js"></script>
+        <script src="~/signalr/hubs"></script>
+        @RenderSection("script", required: false)
+    </head>
+    <body>
+        @RenderBody()
+    </body>
+</html>

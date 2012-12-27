@@ -1,0 +1,49 @@
+﻿@{
+
+}
+
+    <div class="container">
+        <div id="isTyping">&nbsp;</div>
+        <input type="text" id="message" />
+        <input type="button" id="sendmessage" value="Send" />
+        <input type="hidden" id="displayname" />
+        <ul id="discussion"></ul>
+    </div>
+
+@section script{
+    <script type="text/javascript">
+        $(function () {
+ 
+            var chat = $.connection.chatHub;
+
+            chat.client.broadcastMessage = function (name, message) {
+                $('#discussion').append('<li><strong>' + name
+                    + '</strong>:&nbsp;&nbsp;' + message + '</li>');
+            };
+
+            chat.client.sayWhoIsTyping = function (name) {
+                $('#isTyping').html('<em>' + name + ' is typing</em>');
+                setTimeout(function () { 
+                    $('#isTyping').html('&nbsp;');
+                }, 3000);
+            };
+
+            
+            $('#displayname').val(prompt('Enter your name:', '')); 
+            $('#message').focus();
+            $.connection.hub.start().done(function () {
+                $('#sendmessage').click(function () {
+                    var encodedName = $('<div />').text($('#displayname').val()).html();
+                    var encodedMsg = $('<div />').text($('#message').val()).html();
+                    chat.server.send(encodedName, encodedMsg);
+                    $('#message').val('').focus();
+                });
+
+                $('#message').keypress(function () {
+                    var encodedName = $('<div />').text($('#displayname').val()).html();
+                    chat.server.isTyping(encodedName);
+                });
+            });
+        });
+    </script>
+}

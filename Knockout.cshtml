@@ -1,0 +1,141 @@
+﻿@{
+    Page.Title = "Knockout Sample";
+}
+@section script{
+<script type="text/javascript">
+    var viewModel;
+    var productsHub;
+
+    $(function() {
+        viewModel = {
+            productId: ko.observable(),
+            productName: ko.observable(),
+            contactTitle: ko.observable(),
+            contactName: ko.observable(),
+            companyName: ko.observable(),
+            quantityPerUnit: ko.observable(),
+            unitPrice: ko.observable(),
+            unitsInStock: ko.observable(),
+            reorderLevel: ko.observable(),
+            reorderQuantity: ko.observable(),
+            categories: ko.observableArray([]),
+            products: ko.observableArray([])
+        };
+
+        viewModel.buy = function() {
+            var id = this.productId();
+            productsHub.server.buyProduct(id);
+        };
+
+        viewModel.reorder = function() {
+            var quantity = this.reorderQuantity();
+            var id = this.productId();
+            productsHub.server.reorderProduct(quantity, id);
+        };
+
+        viewModel.canBuy = ko.computed(function() {
+            return this.unitsInStock() > 0;
+        }, viewModel);
+
+        viewModel.canReorder = ko.computed(function() {
+            return this.unitsInStock() <= this.reorderLevel();
+        }, viewModel);
+
+        ko.applyBindings(viewModel);
+
+        productsHub = $.connection.productHub;
+
+        productsHub.client.updateAvailableStock = function(unitsInStock, productId) {
+            if (viewModel.productId() == productId) {
+                viewModel.unitsInStock(unitsInStock);
+                $('span[data-bind="text: unitsInStock"]').effect('highlight', { color: '#9ec6e2' }, 3500);
+            }
+        };
+
+        $.connection.hub.start();
+
+        $.getJSON('/JsonServices/GetCategories', function(data) {
+            viewModel.categories(data);
+        });
+
+        $('#categories').change(function() {
+            $.getJSON('/JsonServices/GetProductsByCategory/' + $(this).val(), function(data) {
+                viewModel.products(data);
+            });
+        });
+
+        $('tr').live('hover', function() {
+            $(this).toggleClass('clickable');
+        }).live('click', function() {
+            $.getJSON('/JsonServices/GetProductById/' + $(this).find('td:first').text(), function(data) {
+                var product = data[0];
+                viewModel.productId(product.ProductID);
+                viewModel.productName(product.ProductName);
+                viewModel.contactTitle(product.ContactTitle);
+                viewModel.contactName(product.ContactName);
+                viewModel.companyName(product.CompanyName);
+                viewModel.unitPrice('£' + product.UnitPrice.toFixed(2));
+                viewModel.quantityPerUnit(product.QuantityPerUnit);
+                viewModel.unitsInStock(product.UnitsInStock);
+                viewModel.reorderLevel(product.ReorderLevel);
+            });
+        });
+    });
+</script>
+}
+<div id="products">
+    <h3></h3>
+    <select id="categories" data-bind="options: viewModel.categories, optionsText: 'CategoryName', optionsValue: 'CategoryID', optionsCaption: 'Choose...'"  ></select>
+    <table> 
+        <tbody data-bind="foreach: viewModel.products"> 
+            <tr> 
+                <td><span data-bind="text:ProductID"></span></td> 
+                <td><span data-bind="text:ProductName"></span></td> 
+            </tr> 
+        </tbody> 
+    </table>
+</div>
+
+<div id="details">
+    <h3>Details</h3>
+    <div class="row">
+        <span class="label">Product:</span>
+        <span class="data" data-bind="text: productName"></span>
+    </div>
+    <div class="row">
+        <span class="label">Supplier:</span>
+        <span class="data" data-bind="text: companyName"></span>
+    </div>
+    <div class="row">
+        <span class="label">Contact:</span>
+        <span class="data" data-bind="text: contactName"></span>
+    </div>
+    <div class="row">
+        <span class="label">Position:</span>
+        <span class="data" data-bind="text: contactTitle"></span>
+    </div>
+    <div class="row">
+        <span class="label">Unit Price:</span>
+        <span class="data" data-bind="text: unitPrice"></span>
+    </div>
+    <div class="row">
+        <span class="label">Quantity Per Unit:</span>
+        <span class="data" data-bind="text: quantityPerUnit"></span>
+    </div>
+    <div class="row">
+        <span class="label">Units In Stock:</span>
+        <span class="data" data-bind="text: unitsInStock"></span>
+    </div>
+    <div class="row">
+        <span class="label">Reorder Level:</span>
+        <span class="data" data-bind="text: reorderLevel"></span>
+    </div>
+    <div class="row" data-bind="visible: canReorder">
+        <span class="label"><input data-bind="value: reorderQuantity" class="reorder" /></span>
+        <span><button data-bind="click: reorder">Reorder</button></span>
+    </div>
+    <div class="row">
+        <span class="label">&nbsp;</span>
+        <span><button data-bind="click: buy, enable: canBuy">Buy One</button></span>
+    </div>
+</div>

@@ -1,0 +1,45 @@
+body {
+    font-size: 85%;
+    font-family: "Segoe UI", Arial, Helvetica;
+}
+
+#products {
+    float: left;
+    width: 300px;
+}
+
+#details {
+    float: left;
+    width: 400px;
+}
+
+.row {
+    clear: both;
+}
+
+.label {
+    float: left;
+    width: 120px;
+    padding-right: 5px;
+    text-align: right;
+    font-weight: bold;
+}
+
+.data{
+    float:  left;
+    width:  225px;
+}
+
+h3 {
+    padding-left: 120px;
+}
+
+.reorder{
+    width:  30px;
+}
+
+
+.clickable{
+    cursor: pointer;
+    background: #ffff99;
+}
